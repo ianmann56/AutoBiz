@@ -70,18 +70,24 @@ app.UseAutoBiz(autobiz =>
         .Route(
             HttpMethod.Post,
             "backend/do-something",
-            DoSomething)
+            DoSomething,
+            requireAuthentication: true)
         /* ... other routes in the app chained off from here. */;
 });
 
 // In application code:
 public static MyBusinessDTO DoSomething(SomeRequestContract arguments, User currentUser, IResponseService responseService)
 {
+    if (!currentUser.CanDoThisThing())
+    {
+        return responseService.RespontForbid();
+    }
+    
     MyBusinessDTO results = /* Do some stuff */;
 
     if (/* Some validation check failed */)
     {
-        responseService.RespondBadRequest("This wasn't a valid request");
+        return responseService.RespondInvalidRequest("This wasn't a valid request");
     }
     
     return results;
