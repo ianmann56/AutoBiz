@@ -80,7 +80,7 @@ public static MyBusinessDTO DoSomething(SomeRequestContract arguments, User curr
 {
     if (!currentUser.CanDoThisThing())
     {
-        return responseService.RespontForbid();
+        return responseService.RespondForbid();
     }
     
     MyBusinessDTO results = /* Do some stuff */;
