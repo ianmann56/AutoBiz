@@ -8,10 +8,10 @@ A pattern driven framework for jumping right into the business of your applicati
 The author of this framework does a lot of development of dotnet HTTP APIs using ASP.NET MVC. He finds it repetative to create controllers to simply wrap business classes. The code often looks something like this:
 
 ```cs
-# Controller
+// Controller
 [HttpPost("my-url")]
 [Authorize]
-public IActionResult DoSomething([FromBody] SomeRequestConstruct requestData)
+public IActionResult DoSomething([FromBody] SomeRequestContract requestData)
 {
     User currentUser = // Get the user from the request
     if (!currentUser.CanDoThisThing())
@@ -19,9 +19,29 @@ public IActionResult DoSomething([FromBody] SomeRequestConstruct requestData)
         return Forbid();
     }
     
-    var someBusinessObject = new MyBusinessClass();
-    MyBusinessDTO results = someBusinessObject.DoSomething(requestData.SomeArgument, requestData.OtherArgument);
-    return Ok(results);
+    try
+    {
+        var someBusinessObject = new MyBusinessClass();
+        MyBusinessDTO results = someBusinessObject.DoSomething(requestData.SomeArgument, requestData.OtherArgument);
+        return Ok(results);
+    }
+    catch (InvalidOperationException e)
+    {
+        return BadRequest(e.Message);
+    }
+}
+
+// In application code:
+public static MyBusinessDTO DoSomething(string someArgument, int otherArgument)
+{
+    MyBusinessDTO results = /* Do some stuff */;
+
+    if (/* Some validation check failed */)
+    {
+        throw new InvalidOperationException("This wasn't a valid request");
+    }
+    
+    return results;
 }
 ```
 
@@ -42,17 +62,33 @@ Design a framework that values interface seggregation, dependency injection and 
 With this famework, you can implement your business layer and automatically hook it up to your API.
 
 ```cs
-public MyBusinessDTO
+// In middleware (This bit is in the adapter. It will differ depending on your platform.):
+app.UseAutoBiz(autobiz =>
+{
+    autobiz
+        .UseAuthentication(services => services.GetRequiredService<IMyCurrentUserService>().GetCurrentUser());
+        .Route(
+            HttpMethod.Post,
+            "backend/do-something",
+            DoSomething)
+        /* ... other routes in the app chained off from here. */;
+});
+
+// In application code:
+public static MyBusinessDTO DoSomething(SomeRequestContract arguments, User currentUser, IResponseService responseService)
+{
+    MyBusinessDTO results = /* Do some stuff */;
+
+    if (/* Some validation check failed */)
+    {
+        responseService.RespondBadRequest("This wasn't a valid request");
+    }
+    
+    return results;
+}
 ```
 
-## Is This Framework for Me?
-
-This framework may not fit your needs if:
-
-* You intend on leveraging your platform framework's features as much as possible.
-    This framework abstracts the API out which means you'll lose much of the customization of your platform. If you intend on heavily utilizing utilities of things like controllers and such, you may find that this framework will not help you. It won't get in your way, it just won't help you much either.
-* Your team does not have freedom to design the API how you want.
-    If things like the URLs and request formats are given to you instead of you designing them how you feel best, this framework will not be of help to you.
+The code above will result in an endpoint with the URL "/backend/do-something" accepting POST requests and expecting a request body that reflects the `SomeRequestContract` data structure. The User will be fetched using the configurations done in the `autobiz.UseAuthentication` method and passed into the business layer.
 
 # Ideals
 
@@ -64,3 +100,12 @@ AutoBiz is designed to be platform agnostic. Whichever platform you want to use 
 
 ## Dependency Inversion First
 AutoBiz inverts the direction of dependency for the business objects. Business objects will not be responsible for constructing framework constructs as is the case when your controllers are forced to do things like inherit from a base controller class. Instead, dependencies are passed into your business layer in the form of interfaces so as to allow for mocking or other changings of implementations.
+
+# Is This Framework for Me?
+
+This framework may not fit your needs if:
+
+* You intend on leveraging your platform framework's features as much as possible.
+    This framework abstracts the API out which means you'll lose much of the customization of your platform. If you intend on heavily utilizing utilities of things like controllers and such, you may find that this framework will not help you. It won't get in your way, it just won't help you much either.
+* Your team does not have freedom to design the API how you want.
+    If things like the URLs and request formats are given to you instead of you designing them how you feel best, this framework will not be of help to you.
