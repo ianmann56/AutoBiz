@@ -6,21 +6,21 @@ namespace AutoBiz.Adapters.HttpApi.Routing
 {
   public interface IRouteBuilder<TTenant>
   {
-    IRouteBuilder<TTenant> AddHandler<TRequest, TContextArguments, TDependencies>(
+    IRouteBuilder<TTenant> AddHandler<TRequest, TContextArguments, TDependencies, TResult>(
       HttpMethod method,
-      Func<TRequest, TContextArguments, TTenant, TDependencies, Task<object>> handler);
+      Func<TRequest, TContextArguments, TTenant, TDependencies, Task<TResult>> handler);
 
-    IRouteBuilder<TTenant> AddHandler<TRequest, TContextArguments, TDependencies>(
+    IRouteBuilder<TTenant> AddHandler<TRequest, TContextArguments, TDependencies, TResult>(
       HttpMethod method,
-      Func<TRequest, TContextArguments, TDependencies, Task<object>> handler);
+      Func<TRequest, TContextArguments, TDependencies, Task<TResult>> handler);
 
-    IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(
+    IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies, TResult>(
       HttpMethod method,
-      Func<TRequest, TTenant, TDependencies, Task<object>> handler);
+      Func<TRequest, TTenant, TDependencies, Task<TResult>> handler);
 
-    IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(
+    IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies, TResult>(
       HttpMethod method,
-      Func<TRequest, TDependencies, Task<object>> handler);
+      Func<TRequest, TDependencies, Task<TResult>> handler);
 
     IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(
       HttpMethod method,

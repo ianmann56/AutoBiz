@@ -33,9 +33,9 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       return "/" + string.Join("/", urlSegments.Select(s => s.Trim('/')).ToList());
     }
     
-    public IRouteBuilder<TTenant> AddHandler<TRequest, TContextArguments, TDependencies>(
+    public IRouteBuilder<TTenant> AddHandler<TRequest, TContextArguments, TDependencies, TResult>(
       HttpMethod method,
-      Func<TRequest, TContextArguments, TTenant, TDependencies, Task<object>> handler)
+      Func<TRequest, TContextArguments, TTenant, TDependencies, Task<TResult>> handler)
     {
       string url = GetUrl();
       if (method == HttpMethod.Get)
@@ -53,17 +53,23 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       return this;
     }
 
-    public IRouteBuilder<TTenant> AddHandler<TRequest, TContextArguments, TDependencies>(HttpMethod method, Func<TRequest, TContextArguments, TDependencies, Task<object>> handler)
+    public IRouteBuilder<TTenant> AddHandler<TRequest, TContextArguments, TDependencies, TResult>(
+      HttpMethod method,
+      Func<TRequest, TContextArguments, TDependencies, Task<TResult>> handler)
     {
       throw new NotImplementedException();
     }
 
-    public IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(HttpMethod method, Func<TRequest, TTenant, TDependencies, Task<object>> handler)
+    public IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies, TResult>(
+      HttpMethod method,
+      Func<TRequest, TTenant, TDependencies, Task<TResult>> handler)
     {
       throw new NotImplementedException();
     }
 
-    public IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(HttpMethod method, Func<TRequest, TDependencies, Task<object>> handler)
+    public IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies, TResult>(
+      HttpMethod method,
+      Func<TRequest, TDependencies, Task<TResult>> handler)
     {
       string url = GetUrl();
       if (method == HttpMethod.Get)
@@ -89,14 +95,16 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       return this;
     }
 
-    public IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(HttpMethod method, Func<TRequest, TDependencies, Task> handler)
+    public IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(
+      HttpMethod method,
+      Func<TRequest, TDependencies, Task> handler)
     {
       string url = GetUrl();
       if (method == HttpMethod.Post)
       {
         app.MapPost(url, async context =>
         {
-          TRequest request = RequestProcessing.ParseQueryString<TRequest>(context.Request);
+          TRequest request = await RequestProcessing.ParseBody<TRequest>(context.Request);
           TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
           await handler(request, dependencies);
         });

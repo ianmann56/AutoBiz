@@ -9,7 +9,7 @@ using Todos.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<ITodoRepository, TodoRepository>();
+builder.Services.AddSingleton<ITodoRepository, TodoRepository>();
 
 var app = builder.Build();
 
@@ -31,15 +31,18 @@ app.MapGet("/", async httpContext => {
   await httpContext.Response.Body.WriteAsync(data);
 });
 
-app.UseAutoBiz<ExampleTenant>(group =>
+app.UseAutoBiz<ExampleTenant>(api =>
 {
-  group.AddRoute("todos/create", route =>
+  api.AddGroup("todos", group =>
   {
-    route.AddHandler(HttpMethod.Post, (CreateTodoCommandArguments req, CreateTodoCommandDeps deps) => CreateTodoCommand.Execute(req, deps));
-  });
-  group.AddRoute("todos", route =>
-  {
-    route.AddHandler(HttpMethod.Get, (ListTodosQueryArguments req, ListTodosQueryDeps deps) => ListTodosQuery.Query(req, deps));
+    group.AddRoute("", route =>
+    {
+      route.AddHandler(HttpMethod.Post, (CreateTodoCommandArguments req, CreateTodoCommandDeps deps) => CreateTodoCommand.Execute(req, deps));
+    });
+    group.AddRoute("", route =>
+    {
+      route.AddHandler(HttpMethod.Get, (ListTodosQueryArguments req, ListTodosQueryDeps deps) => ListTodosQuery.Query(req, deps));
+    });
   });
 });
 

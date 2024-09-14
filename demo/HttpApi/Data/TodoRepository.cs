@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Todos.Business;
@@ -10,7 +11,7 @@ namespace Todos.Data
     
     public Task CreateTodo(CreateTodoDto data)
     {
-      Todo todo = new Todo(data.Name, data.Description, false);
+      Todo todo = new Todo(Guid.NewGuid(), data.Name, data.Description, false);
       this.todos.Add(todo);
       return Task.CompletedTask;
     }
