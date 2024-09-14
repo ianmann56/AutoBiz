@@ -37,11 +37,15 @@ app.UseAutoBiz<ExampleTenant>(api =>
   {
     group.AddRoute("", route =>
     {
-      route.AddHandler(HttpMethod.Post, (CreateTodoCommandArguments req, CreateTodoCommandDeps deps) => CreateTodoCommand.Execute(req, deps));
+      route.AddCommand((CreateTodoCommandArguments req, CreateTodoCommandDeps deps) => CreateTodoCommand.Execute(req, deps));
     });
     group.AddRoute("", route =>
     {
       route.AddHandler(HttpMethod.Get, (ListTodosQueryArguments req, ListTodosQueryDeps deps) => ListTodosQuery.Query(req, deps));
+    });
+    group.AddRoute("{id}", route =>
+    {
+      route.AddCommand((object request, DeleteTodoContext context, DeleteTodoDeps deps) => DeleteTodoCommand.Execute(context, deps));
     });
   });
 });

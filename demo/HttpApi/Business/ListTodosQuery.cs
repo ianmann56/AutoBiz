@@ -1,11 +1,13 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Todos.Business
 {
   public class ListTodosQueryArguments
   {
-    
+    public string? Filter { get; init; } = string.Empty;
   }
 
   public class ListTodosQueryDeps
@@ -15,9 +17,12 @@ namespace Todos.Business
   
   public static class ListTodosQuery
   {
-    public static Task<IEnumerable<Todo>> Query(ListTodosQueryArguments args, ListTodosQueryDeps deps)
+    public static async Task<IEnumerable<Todo>> Query(ListTodosQueryArguments args, ListTodosQueryDeps deps)
     {
-      return deps.TodoRepository.ListTodos();
+      IEnumerable<Todo> all = await deps.TodoRepository.ListTodos();
+      return string.IsNullOrWhiteSpace(args.Filter)
+        ? all
+        : all.Where(t => t.Name.Contains(args.Filter, StringComparison.OrdinalIgnoreCase)).ToList();
     }
   }
 }

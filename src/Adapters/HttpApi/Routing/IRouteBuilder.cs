@@ -14,6 +14,9 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       HttpMethod method,
       Func<TRequest, TContextArguments, TDependencies, Task<TResult>> handler);
 
+    IRouteBuilder<TTenant> AddCommand<TRequest, TContextArguments, TDependencies>(
+      Func<TRequest, TContextArguments, TDependencies, Task> handler);
+
     IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies, TResult>(
       HttpMethod method,
       Func<TRequest, TTenant, TDependencies, Task<TResult>> handler);
@@ -22,8 +25,7 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       HttpMethod method,
       Func<TRequest, TDependencies, Task<TResult>> handler);
 
-    IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(
-      HttpMethod method,
+    IRouteBuilder<TTenant> AddCommand<TRequest, TDependencies>(
       Func<TRequest, TDependencies, Task> handler);
   }
 }

@@ -18,7 +18,21 @@ namespace AutoBiz.Adapters.HttpApi.Http
 
       if (respObj == null)
       {
-        throw new ArgumentException($"Could not deserialize query string to {typeof(TRequest).FullName}.");
+        throw new ArgumentException($"Could not convert query string to {typeof(TRequest).FullName}.");
+      }
+
+      return respObj;
+    }
+
+    public static TContextArguments ParseRouteArguments<TContextArguments>(HttpRequest request)
+    {
+      var dict = request.RouteValues;
+      string json = JsonConvert.SerializeObject(dict);
+      TContextArguments? respObj = JsonConvert.DeserializeObject<TContextArguments>(json);
+
+      if (respObj == null)
+      {
+        throw new ArgumentException($"Could not convert route to {typeof(TContextArguments).FullName}.");
       }
 
       return respObj;

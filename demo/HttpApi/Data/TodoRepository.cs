@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Todos.Business;
 
@@ -19,6 +20,16 @@ namespace Todos.Data
     public Task<IEnumerable<Todo>> ListTodos()
     {
       return Task.FromResult<IEnumerable<Todo>>(this.todos);
+    }
+
+    public Task DeleteTodo(Guid id)
+    {
+      Todo? todo = this.todos.SingleOrDefault(t => t.Id == id);
+      if (todo != null)
+      {
+        this.todos.Remove(todo);
+      }
+      return Task.CompletedTask;
     }
   }
 }
