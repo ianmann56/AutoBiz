@@ -6,7 +6,7 @@ namespace AutoBiz.Adapters.HttpApi.Routing
 {
   public interface IRouteGroupBuilder<TTenant>
   {
-    IRouteGroupBuilder<TTenant> AddRoute<TRequest>(string route, Action<IRouteBuilder<TTenant>> configure);
-    IRouteGroupBuilder<TTenant> AddGroup<TRequest>(string route, Action<IRouteGroupBuilder<TTenant>> configure);
+    IRouteGroupBuilder<TTenant> AddRoute(string route, Action<IRouteBuilder<TTenant>> configure);
+    IRouteGroupBuilder<TTenant> AddGroup(string route, Action<IRouteGroupBuilder<TTenant>> configure);
   }
 }

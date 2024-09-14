@@ -1,8 +1,15 @@
+using System.Net.Http;
 using System.Threading.Tasks;
+using AutoBiz.Adapters.HttpApi.Middleware;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Todos.Business;
+using Todos.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 
 var app = builder.Build();
 
@@ -22,6 +29,18 @@ app.UseRouting();
 app.MapGet("/", async httpContext => {
   byte[] data = System.Text.Encoding.UTF8.GetBytes("Hello World!");
   await httpContext.Response.Body.WriteAsync(data);
+});
+
+app.UseAutoBiz<ExampleTenant>(group =>
+{
+  group.AddRoute("todos/create", route =>
+  {
+    route.AddHandler(HttpMethod.Post, (CreateTodoCommandArguments req, CreateTodoCommandDeps deps) => CreateTodoCommand.Execute(req, deps));
+  });
+  group.AddRoute("todos", route =>
+  {
+    route.AddHandler(HttpMethod.Get, (ListTodosQueryArguments req, ListTodosQueryDeps deps) => ListTodosQuery.Query(req, deps));
+  });
 });
 
 app.Run();

@@ -19,7 +19,7 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       this.urlSegments = urlSegments;
     }
     
-    public IRouteGroupBuilder<TTenant> AddGroup<TRequest>(string route, Action<IRouteGroupBuilder<TTenant>> configure)
+    public IRouteGroupBuilder<TTenant> AddGroup(string route, Action<IRouteGroupBuilder<TTenant>> configure)
     {
       IEnumerable<string> nestedUrlSegments = this.urlSegments.Append(route);
 
@@ -31,7 +31,7 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       return this;
     }
 
-    public IRouteGroupBuilder<TTenant> AddRoute<TRequest>(string route, Action<IRouteBuilder<TTenant>> configure)
+    public IRouteGroupBuilder<TTenant> AddRoute(string route, Action<IRouteBuilder<TTenant>> configure)
     {
       IEnumerable<string> nestedUrlSegments = this.urlSegments.Append(route);
 

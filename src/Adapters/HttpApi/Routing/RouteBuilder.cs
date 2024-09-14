@@ -7,6 +7,8 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
+using AutoBiz.Adapters.HttpApi.Host;
+using AutoBiz.Adapters.HttpApi.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
@@ -28,7 +30,7 @@ namespace AutoBiz.Adapters.HttpApi.Routing
 
     private string GetUrl()
     {
-      return string.Join("/", urlSegments.Select(s => s.Trim('/')).ToList());
+      return "/" + string.Join("/", urlSegments.Select(s => s.Trim('/')).ToList());
     }
     
     public IRouteBuilder<TTenant> AddHandler<TRequest, TContextArguments, TDependencies>(
@@ -40,10 +42,10 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       {
         app.MapGet(url, async context =>
         {
-          TRequest request = ParseQueryString<TRequest>(context.Request);
-          TTenant tenant = null; // Get the tenant from authentication services.
-          TContextArguments contextArguments = null; // Get the args from the URL
-          TDependencies dependencies = null; // Use reflection to get the dependencies from the DI container for each property in TDependencies.
+          TRequest request = RequestProcessing.ParseQueryString<TRequest>(context.Request);
+          TTenant tenant = default; // Get the tenant from authentication services.
+          TContextArguments contextArguments = default; // Get the args from the URL
+          TDependencies dependencies = default; // Use reflection to get the dependencies from the DI container for each property in TDependencies.
           object result = await handler(request, contextArguments, tenant, dependencies);
           await context.Response.WriteAsJsonAsync(result);
         });
@@ -63,21 +65,52 @@ namespace AutoBiz.Adapters.HttpApi.Routing
 
     public IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(HttpMethod method, Func<TRequest, TDependencies, Task<object>> handler)
     {
-      throw new NotImplementedException();
+      string url = GetUrl();
+      if (method == HttpMethod.Get)
+      {
+        app.MapGet(url, async context =>
+        {
+          TRequest request = RequestProcessing.ParseQueryString<TRequest>(context.Request);
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          object result = await handler(request, dependencies);
+          await context.Response.WriteAsJsonAsync(result);
+        });
+      }
+      else if (method == HttpMethod.Get)
+      {
+        app.MapGet(url, async context =>
+        {
+          TRequest request = RequestProcessing.ParseQueryString<TRequest>(context.Request);
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          object result = await handler(request, dependencies);
+          await context.Response.WriteAsJsonAsync(result);
+        });
+      }
+      return this;
     }
 
-    private TRequest ParseQueryString<TRequest>(HttpRequest request)
+    public IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(HttpMethod method, Func<TRequest, TDependencies, Task> handler)
     {
-      var dict = HttpUtility.ParseQueryString(request.QueryString.Value ?? "");
-      string json = JsonConvert.SerializeObject(dict.Cast<string>().ToDictionary(k => k, v => dict[v]));
-      TRequest? respObj = JsonConvert.DeserializeObject<TRequest>(json);
-
-      if (respObj == null)
+      string url = GetUrl();
+      if (method == HttpMethod.Post)
       {
-        throw new Exception($"Could not deserialize query string to {typeof(TRequest).FullName}.");
+        app.MapPost(url, async context =>
+        {
+          TRequest request = RequestProcessing.ParseQueryString<TRequest>(context.Request);
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          await handler(request, dependencies);
+        });
       }
-
-      return respObj;
+      else if (method == HttpMethod.Get)
+      {
+        app.MapGet(url, async context =>
+        {
+          TRequest request = RequestProcessing.ParseQueryString<TRequest>(context.Request);
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          await handler(request, dependencies);
+        });
+      }
+      return this;
     }
   }
 }

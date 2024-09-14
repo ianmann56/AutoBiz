@@ -21,5 +21,9 @@ namespace AutoBiz.Adapters.HttpApi.Routing
     IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(
       HttpMethod method,
       Func<TRequest, TDependencies, Task<object>> handler);
+
+    IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies>(
+      HttpMethod method,
+      Func<TRequest, TDependencies, Task> handler);
   }
 }
