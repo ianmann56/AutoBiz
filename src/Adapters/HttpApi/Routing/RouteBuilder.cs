@@ -52,6 +52,46 @@ namespace AutoBiz.Adapters.HttpApi.Routing
           await context.Response.WriteAsJsonAsync(result);
         });
       }
+      else if (method == HttpMethod.Post)
+      {
+        app.MapPost(url, async (HttpContext context, [AsParameters] TRequest request) =>
+        {
+          TTenant tenant = default; // Get the tenant from authentication services.
+          TContextArguments contextArguments = RequestProcessing.ParseRouteArguments<TContextArguments>(context.Request);
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TResult result = await handler(request, contextArguments, tenant, dependencies);
+          await context.Response.WriteAsJsonAsync(result);
+        });
+      }
+      return this;
+    }
+
+    public IRouteBuilder<TTenant> AddCommand<TRequest, TContextArguments, TDependencies>(
+      HttpMethod method,
+      Func<TRequest, TContextArguments, TTenant, TDependencies, Task> handler)
+    {      
+      string url = GetUrl();
+      
+      if (method == HttpMethod.Get)
+      {
+        app.MapGet(url, async (HttpContext context, [AsParameters] TRequest request) =>
+        {
+          TTenant tenant = default; // Get the tenant from authentication services.
+          TContextArguments contextArguments = RequestProcessing.ParseRouteArguments<TContextArguments>(context.Request);
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          await handler(request, contextArguments, tenant, dependencies);
+        });
+      }
+      else if (method == HttpMethod.Post)
+      {
+        app.MapPost(url, async (HttpContext context, [AsParameters] TRequest request) =>
+        {
+          TTenant tenant = default; // Get the tenant from authentication services.
+          TContextArguments contextArguments = RequestProcessing.ParseRouteArguments<TContextArguments>(context.Request);
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          await handler(request, contextArguments, tenant, dependencies);
+        });
+      }
       return this;
     }
 
@@ -61,7 +101,28 @@ namespace AutoBiz.Adapters.HttpApi.Routing
     {
       RestrictMethods(method, [HttpMethod.Get, HttpMethod.Post]);
       
-      throw new NotImplementedException();
+      string url = GetUrl();
+      if (method == HttpMethod.Get)
+      {
+        app.MapGet(url, async (HttpContext context, [AsParameters] TRequest request) =>
+        {
+          TContextArguments contextArguments = RequestProcessing.ParseRouteArguments<TContextArguments>(context.Request);
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TResult result = await handler(request, contextArguments, dependencies);
+          await context.Response.WriteAsJsonAsync(result);
+        });
+      }
+      else if (method == HttpMethod.Post)
+      {
+        app.MapPost(url, async (HttpContext context, [AsParameters] TRequest request) =>
+        {
+          TContextArguments contextArguments = RequestProcessing.ParseRouteArguments<TContextArguments>(context.Request);
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TResult result = await handler(request, contextArguments, dependencies);
+          await context.Response.WriteAsJsonAsync(result);
+        });
+      }
+      return this;
     }
 
     public IRouteBuilder<TTenant> AddCommand<TRequest, TContextArguments, TDependencies>(
@@ -85,7 +146,56 @@ namespace AutoBiz.Adapters.HttpApi.Routing
     {
       RestrictMethods(method, [HttpMethod.Get, HttpMethod.Post]);
       
-      throw new NotImplementedException();
+      string url = GetUrl();
+      if (method == HttpMethod.Get)
+      {
+        app.MapGet(url, async (HttpContext context, [AsParameters] TRequest request) =>
+        {
+          TTenant tenant = default; // Get the tenant from authentication services.
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TResult result = await handler(request, tenant, dependencies);
+          await context.Response.WriteAsJsonAsync(result);
+        });
+      }
+      else if (method == HttpMethod.Post)
+      {
+        app.MapPost(url, async (HttpContext context, [AsParameters] TRequest request) =>
+        {
+          TTenant tenant = default; // Get the tenant from authentication services.
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TResult result = await handler(request, tenant, dependencies);
+          await context.Response.WriteAsJsonAsync(result);
+        });
+      }
+      return this;
+    }
+
+    public IRouteBuilder<TTenant> AddCommand<TRequest, TDependencies>(
+      HttpMethod method,
+      Func<TRequest, TTenant, TDependencies, Task> handler)
+    {      
+      string url = GetUrl();
+
+      if (method == HttpMethod.Get)
+      {
+        app.MapGet(url, async (HttpContext context, [AsParameters] TRequest request) =>
+        {
+          TTenant tenant = default; // Get the tenant from authentication services.
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          await handler(request, tenant, dependencies);
+        });
+      }
+      else if (method == HttpMethod.Post)
+      {
+        app.MapPost(url, async (HttpContext context, [AsParameters] TRequest request) =>
+        {
+          TTenant tenant = default; // Get the tenant from authentication services.
+          TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          await handler(request, tenant, dependencies);
+        });
+      }
+
+      return this;
     }
 
     public IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies, TResult>(
