@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Web;
 using AutoBiz.Adapters.HttpApi.Host;
 using AutoBiz.Adapters.HttpApi.Http;
+using AutoBiz.Adapters.HttpApi.Tenants;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,11 +23,13 @@ namespace AutoBiz.Adapters.HttpApi.Routing
   {
     private WebApplication app;
     private IEnumerable<string> urlSegments;
+    private AuthenticatedTenentResolver<TTenant> tenantResolver;
 
-    public RouteBuilder(WebApplication app, IEnumerable<string> urlSegments)
+    public RouteBuilder(WebApplication app, IEnumerable<string> urlSegments, AuthenticatedTenentResolver<TTenant> tenantResolver)
     {
       this.app = app;
       this.urlSegments = urlSegments;
+      this.tenantResolver = tenantResolver;
     }
 
     private string GetUrl()
@@ -45,9 +48,11 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       {
         app.MapGet(url, async (HttpContext context, [AsParameters] TRequest request) =>
         {
-          TTenant tenant = default; // Get the tenant from authentication services.
+          Task<TTenant> tenantTask = this.tenantResolver.Invoke(context);
           TContextArguments contextArguments = RequestProcessing.ParseRouteArguments<TContextArguments>(context.Request);
           TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TTenant tenant = await tenantTask;
+
           TResult result = await handler(request, contextArguments, tenant, dependencies);
           await context.Response.WriteAsJsonAsync(result);
         });
@@ -56,9 +61,11 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       {
         app.MapPost(url, async (HttpContext context, [AsParameters] TRequest request) =>
         {
-          TTenant tenant = default; // Get the tenant from authentication services.
+          Task<TTenant> tenantTask = this.tenantResolver.Invoke(context);
           TContextArguments contextArguments = RequestProcessing.ParseRouteArguments<TContextArguments>(context.Request);
           TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TTenant tenant = await tenantTask;
+
           TResult result = await handler(request, contextArguments, tenant, dependencies);
           await context.Response.WriteAsJsonAsync(result);
         });
@@ -76,9 +83,11 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       {
         app.MapGet(url, async (HttpContext context, [AsParameters] TRequest request) =>
         {
-          TTenant tenant = default; // Get the tenant from authentication services.
+          Task<TTenant> tenantTask = this.tenantResolver.Invoke(context);
           TContextArguments contextArguments = RequestProcessing.ParseRouteArguments<TContextArguments>(context.Request);
           TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TTenant tenant = await tenantTask;
+
           await handler(request, contextArguments, tenant, dependencies);
         });
       }
@@ -86,9 +95,11 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       {
         app.MapPost(url, async (HttpContext context, [AsParameters] TRequest request) =>
         {
-          TTenant tenant = default; // Get the tenant from authentication services.
+          Task<TTenant> tenantTask = this.tenantResolver.Invoke(context);
           TContextArguments contextArguments = RequestProcessing.ParseRouteArguments<TContextArguments>(context.Request);
           TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TTenant tenant = await tenantTask;
+          
           await handler(request, contextArguments, tenant, dependencies);
         });
       }
@@ -151,8 +162,10 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       {
         app.MapGet(url, async (HttpContext context, [AsParameters] TRequest request) =>
         {
-          TTenant tenant = default; // Get the tenant from authentication services.
+          Task<TTenant> tenantTask = this.tenantResolver.Invoke(context);
           TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TTenant tenant = await tenantTask;
+          
           TResult result = await handler(request, tenant, dependencies);
           await context.Response.WriteAsJsonAsync(result);
         });
@@ -161,8 +174,10 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       {
         app.MapPost(url, async (HttpContext context, [AsParameters] TRequest request) =>
         {
-          TTenant tenant = default; // Get the tenant from authentication services.
+          Task<TTenant> tenantTask = this.tenantResolver.Invoke(context);
           TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TTenant tenant = await tenantTask;
+          
           TResult result = await handler(request, tenant, dependencies);
           await context.Response.WriteAsJsonAsync(result);
         });
@@ -180,8 +195,10 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       {
         app.MapGet(url, async (HttpContext context, [AsParameters] TRequest request) =>
         {
-          TTenant tenant = default; // Get the tenant from authentication services.
+          Task<TTenant> tenantTask = this.tenantResolver.Invoke(context);
           TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TTenant tenant = await tenantTask;
+          
           await handler(request, tenant, dependencies);
         });
       }
@@ -189,8 +206,10 @@ namespace AutoBiz.Adapters.HttpApi.Routing
       {
         app.MapPost(url, async (HttpContext context, [AsParameters] TRequest request) =>
         {
-          TTenant tenant = default; // Get the tenant from authentication services.
+          Task<TTenant> tenantTask = this.tenantResolver.Invoke(context);
           TDependencies dependencies = DependencyInjection.GetRequiredServices<TDependencies>(context.RequestServices);
+          TTenant tenant = await tenantTask;
+          
           await handler(request, tenant, dependencies);
         });
       }

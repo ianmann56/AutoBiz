@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoBiz.Adapters.HttpApi.Tenants;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AutoBiz.Adapters.HttpApi.Routing
 {
@@ -35,7 +37,13 @@ namespace AutoBiz.Adapters.HttpApi.Routing
     {
       IEnumerable<string> nestedUrlSegments = this.urlSegments.Append(route);
 
-      RouteBuilder<TTenant> routeBuilder = new RouteBuilder<TTenant>(this.app, nestedUrlSegments);
+      AuthenticatedTenentResolver<TTenant>? authenticatedTenentResolver = this.app.Services.GetService<AuthenticatedTenentResolver<TTenant>>();
+      if (authenticatedTenentResolver == null)
+      {
+        throw new InvalidOperationException($"No {typeof(AuthenticatedTenentResolver<TTenant>).FullName} registered for type {typeof(TTenant)}. Please add one to the application services.");
+      }
+
+      RouteBuilder<TTenant> routeBuilder = new RouteBuilder<TTenant>(this.app, nestedUrlSegments, authenticatedTenentResolver);
       configure(routeBuilder);
 
       routes.Add(routeBuilder);
