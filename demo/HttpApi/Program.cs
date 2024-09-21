@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoBiz.Adapters.HttpApi.Middleware;
@@ -37,11 +38,11 @@ app.UseAutoBiz<ExampleTenant>(api =>
   {
     group.AddRoute("", route =>
     {
-      route.AddCommand((CreateTodoCommandArguments req, CreateTodoCommandDeps deps) => CreateTodoCommand.Execute(req, deps));
+      route.AddCommand<CreateTodoCommandArguments, CreateTodoCommandDeps>(CreateTodoCommand.Execute);
     });
     group.AddRoute("", route =>
     {
-      route.AddHandler(HttpMethod.Get, (ListTodosQueryArguments req, ListTodosQueryDeps deps) => ListTodosQuery.Query(req, deps));
+      route.AddHandler<ListTodosQueryArguments, ListTodosQueryDeps, IEnumerable<Todo>>(HttpMethod.Get, ListTodosQuery.Query);
     });
     group.AddRoute("{id}", route =>
     {

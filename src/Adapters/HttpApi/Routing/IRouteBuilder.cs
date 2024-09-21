@@ -1,39 +1,36 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AutoBiz.Adapters.HttpApi.Tenants;
+using Microsoft.AspNetCore.Http;
 
 namespace AutoBiz.Adapters.HttpApi.Routing
 {
-  public interface IRouteBuilder<TTenant>
+  public interface IRouteBuilder
   {
-    IRouteBuilder<TTenant> AddHandler<TRequest, TContextArguments, TDependencies, TResult>(
-      HttpMethod method,
-      Func<TRequest, TContextArguments, TTenant, TDependencies, Task<TResult>> handler);
-
-    IRouteBuilder<TTenant> AddCommand<TRequest, TContextArguments, TDependencies>(
-      HttpMethod method,
-      Func<TRequest, TContextArguments, TTenant, TDependencies, Task> handler);
-
-    IRouteBuilder<TTenant> AddHandler<TRequest, TContextArguments, TDependencies, TResult>(
+    IRouteBuilder AddHandler<TRequest, TContextArguments, TDependencies, TResult>(
       HttpMethod method,
       Func<TRequest, TContextArguments, TDependencies, Task<TResult>> handler);
 
-    IRouteBuilder<TTenant> AddCommand<TRequest, TContextArguments, TDependencies>(
+    IRouteBuilder AddCommand<TRequest, TContextArguments, TDependencies>(
       Func<TRequest, TContextArguments, TDependencies, Task> handler);
 
-    IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies, TResult>(
-      HttpMethod method,
-      Func<TRequest, TTenant, TDependencies, Task<TResult>> handler);
-
-    IRouteBuilder<TTenant> AddCommand<TRequest, TDependencies>(
-      HttpMethod method,
-      Func<TRequest, TTenant, TDependencies, Task> handler);
-
-    IRouteBuilder<TTenant> AddHandler<TRequest, TDependencies, TResult>(
+    IRouteBuilder AddHandler<TRequest, TDependencies, TResult>(
       HttpMethod method,
       Func<TRequest, TDependencies, Task<TResult>> handler);
 
-    IRouteBuilder<TTenant> AddCommand<TRequest, TDependencies>(
+    IRouteBuilder AddCommand<TRequest, TDependencies>(
+      HttpMethod method,
       Func<TRequest, TDependencies, Task> handler);
+
+    IRouteBuilder AddHandler<TRequest, TResult>(
+      HttpMethod method,
+      Func<TRequest, Task<TResult>> handler);
+
+    IRouteBuilder AddCommand<TRequest>(
+      HttpMethod method,
+      Func<TRequest, Task> handler);
+
+    IRouteBuilder<TTenant> AddTenant<TTenant>(AuthenticatedTenentResolver<TTenant> tenantResolver);
   }
 }
